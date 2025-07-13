@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WhatsApp Number Bot</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body { background: #111; color: white; padding: 20px; font-family: sans-serif; }
+    .wa-btn {
+      background: #25D366;
+      color: white;
+      padding: 10px;
+      margin: 10px;
+      text-decoration: none;
+      display: inline-block;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .disabled {
+      background: gray;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Available WhatsApp Numbers</h2>
+  <div id="container">Loading...</div>
+
+  <script>
+    const supabaseUrl = 'https://tjafcainnsdwkbrfannc.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYWZjYWlubnNkd2ticmZhbm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzODc2NTAsImV4cCI6MjA2Nzk2MzY1MH0.qbkAUn6WRBjITyqRaqA4kX0YfK2gPu3pSeWkjSEQVJs';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function loadNumbers() {
+      const { data, error } = await supabase
+        .from('numbers')
+        .select('*')
+        .eq('used', false)
+        .limit(40);
+
+      const container = document.getElementById('container');
+      container.innerHTML = '';
+
+      data.forEach(row => {
+        const btn = document.createElement('a');
+        btn.href = `https://wa.me/91${row.number}`;
+        btn.target = '_blank';
+        btn.className = 'wa-btn';
+        btn.textContent = `Chat: ${row.number}`;
+        btn.onclick = async () => {
+          await supabase.from('numbers').update({ used: true }).eq('id', row.id);
+          btn.classList.add('disabled');
+          btn.textContent = `Used: ${row.number}`;
+          btn.removeAttribute('href');
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    loadNumbers();
+  </script>
+</body>
+</html>
